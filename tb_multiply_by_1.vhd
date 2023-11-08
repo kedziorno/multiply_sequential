@@ -32,6 +32,8 @@ USE ieee.std_logic_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 USE ieee.numeric_std.ALL;
 
+USE work.pkg_test.all;
+
 ENTITY tb_multiply_by_1 IS
 END tb_multiply_by_1;
 
@@ -59,6 +61,13 @@ signal o_O1 : std_logic;
 
 constant Ck_period : time := 10 ns;
 
+signal start,stop : bit := '0';
+
+constant cycles : integer := 1024;
+
+signal value_in : unsigned (cycles-1 downto 0) := to_unsigned (80074*1, cycles);
+signal value_out : unsigned (cycles-1 downto 0) := to_unsigned (80074*1, cycles);
+
 BEGIN
 
 -- Instantiate the Unit Under Test (UUT)
@@ -76,29 +85,59 @@ begin
 Ck <= not Ck; wait for Ck_period/2;
 end process Ck_process;
 
--- Stimulus process
-stim_proc : process
---type stv is array (natural range <>) of unsigned;
-procedure shift_in (
-signal i_IN : out std_logic; 
-signal Ck : in std_logic;
-constant value : in unsigned
-) is
-begin
-l0 : for i in value'reverse_range loop
-i_IN <= to_x01(value (i));
-wait until rising_edge (Ck);
-end loop l0;
-end procedure shift_in;
+reset_proc : process
 begin
 -- hold reset state for 100 ns.
 Reset <= '0';
 wait for 100 ns;
 Reset <= '1';
+start <= '1';
+wait;
+end process reset_proc;
+
+-- Stimulus processes
+stim_proc_in : process
+begin
+wait until start = '1';
 wait until rising_edge (Ck);
---shift_in (i_IN, Ck, "10011100011001010");
-shift_in (i_IN, Ck, to_unsigned (80074, 32));
+shift_out (i_IN, Ck, value_in);
+wait;
+end process stim_proc_in;
+
+stim_proc_out : process
+begin
+wait until start = '1';
+wait until rising_edge (Ck);
+shift_in (o_O1, Ck, value_out);
+wait;
+end process stim_proc_out;
+
+assert_proc : process
+begin
+wait until stop = '1';
+assert (to_integer (unsigned (value_in)) = to_integer (unsigned (value_out)))
+  report 
+    integer'image (to_integer (unsigned (value_in))) &
+    " /= " &
+    integer'image (to_integer (unsigned (value_out)));
+wait for 1 ps;
 report "tb done" severity failure;
-end process stim_proc;
+end process assert_proc;
+
+cycles_proc : process (Ck) is
+  variable i : integer range 0 to cycles-1;
+begin
+  if (Reset = '0') then
+    i := 0;
+  elsif (rising_edge (Ck)) then
+    if (i = cycles - 1) then
+      stop <= '1';
+      i := 0;
+    else
+      stop <= '0';
+      i := i + 1;
+    end if;
+  end if;
+end process cycles_proc;
 
 END;
