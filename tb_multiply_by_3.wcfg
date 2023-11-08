@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="/home/user/workspace/Deeds/multiply/tb_multiply_by_3_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="std_logic_1164" />
+            <top_module name="tb_multiply_by_3" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="6" />
+   <wvobject fp_name="/tb_multiply_by_3/ck" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">ck</obj_property>
+      <obj_property name="ObjectShortName">ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_multiply_by_3/reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_multiply_by_3/i_in" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">i_in</obj_property>
+      <obj_property name="ObjectShortName">i_in</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_multiply_by_3/o_o0" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">o_o0</obj_property>
+      <obj_property name="ObjectShortName">o_o0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_multiply_by_3/o_o1" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">o_o1</obj_property>
+      <obj_property name="ObjectShortName">o_o1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_multiply_by_3/ck_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">ck_period</obj_property>
+      <obj_property name="ObjectShortName">ck_period</obj_property>
+   </wvobject>
+</wave_config>

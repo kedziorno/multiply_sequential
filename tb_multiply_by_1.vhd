@@ -2,15 +2,15 @@
 -- Company: 
 -- Engineer:
 --
--- Create Date:   19:18:10 11/06/2023
+-- Create Date:   19:42:14 11/08/2023
 -- Design Name:   
--- Module Name:   /home/user/workspace/Deeds/multiply/tb_multiply_by_3.vhd
+-- Module Name:   /home/user/workspace/Deeds/multiply_seq/tb_multiply_by_1.vhd
 -- Project Name:  multiply
 -- Target Device:  
 -- Tool versions:  
 -- Description:   
 -- 
--- VHDL Test Bench Created by ISE for module: multiply_by_3
+-- VHDL Test Bench Created by ISE for module: multiply_by_1
 -- 
 -- Dependencies:
 -- 
@@ -30,15 +30,15 @@ USE ieee.std_logic_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---USE ieee.numeric_std.ALL;
+USE ieee.numeric_std.ALL;
 
-ENTITY tb_multiply_by_3 IS
-END tb_multiply_by_3;
+ENTITY tb_multiply_by_1 IS
+END tb_multiply_by_1;
 
-ARCHITECTURE behavior OF tb_multiply_by_3 IS
+ARCHITECTURE behavior OF tb_multiply_by_1 IS 
 
 -- Component Declaration for the Unit Under Test (UUT)
-COMPONENT multiply_by_3
+COMPONENT multiply_by_1
 PORT(
 Ck : IN  std_logic;
 Reset : IN  std_logic;
@@ -62,7 +62,7 @@ constant Ck_period : time := 10 ns;
 BEGIN
 
 -- Instantiate the Unit Under Test (UUT)
-uut_m3 : multiply_by_3 PORT MAP (
+uut_m1 : multiply_by_1 PORT MAP (
 Ck => Ck,
 Reset => Reset,
 i_IN => i_IN,
@@ -71,48 +71,34 @@ o_O1 => o_O1
 );
 
 -- Clock process definitions
-Ck_process :process
+Ck_process : process
 begin
-Ck <= '1';
-wait for Ck_period/2;
-Ck <= '0';
-wait for Ck_period/2;
+Ck <= not Ck; wait for Ck_period/2;
 end process Ck_process;
 
 -- Stimulus process
-stim_proc: process
+stim_proc : process
+--type stv is array (natural range <>) of unsigned;
+procedure shift_in (
+signal i_IN : out std_logic; 
+signal Ck : in std_logic;
+constant value : in unsigned
+) is
+begin
+l0 : for i in value'reverse_range loop
+i_IN <= to_x01(value (i));
+wait until rising_edge (Ck);
+end loop l0;
+end procedure shift_in;
 begin
 -- hold reset state for 100 ns.
 Reset <= '0';
 wait for 100 ns;
 Reset <= '1';
---wait for Ck_period*1;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
--- insert stimulus here 
+wait until rising_edge (Ck);
+--shift_in (i_IN, Ck, "10011100011001010");
+shift_in (i_IN, Ck, to_unsigned (80074, 32));
 report "tb done" severity failure;
-wait;
-end process;
+end process stim_proc;
 
 END;
