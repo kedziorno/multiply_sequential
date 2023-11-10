@@ -85,12 +85,18 @@ end process Ck_process;
 
 reset_proc : process
 begin
--- hold reset state for 100 ns.
-Reset <= '0';
-wait for 100 ns;
-Reset <= '1';
+start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
 value_in <= to_unsigned (80074*1, cycles);
-start <= '1';
+wait for (cycles+3)*Ck_Period;
+
+start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
+value_in <= to_unsigned (55555*1, cycles);
+wait for (cycles+3)*Ck_Period;
+
+start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
+value_in <= to_unsigned (11111*1, cycles);
+wait for (cycles+3)*Ck_Period;
+
 wait;
 end process reset_proc;
 
@@ -101,7 +107,7 @@ wait until start = '1';
 shift_out (i_IN, Ck, value_in);
 wait until rising_edge (Ck);
 i_IN <= '0';
-wait;
+--wait;
 end process stim_proc_in;
 
 stim_proc_out : process
@@ -111,7 +117,7 @@ wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 shift_in (o_O1, Ck, value_out);
-wait;
+--wait;
 end process stim_proc_out;
 
 assert_proc : process
@@ -123,7 +129,7 @@ assert (to_integer (unsigned (value_in)) = to_integer (unsigned (value_out)))
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
 wait for Ck_period;
-report "tb done" severity failure;
+--report "tb done" severity failure;
 end process assert_proc;
 
 cycles_proc : process (Ck) is
