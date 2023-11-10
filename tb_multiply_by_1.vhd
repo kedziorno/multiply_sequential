@@ -63,10 +63,8 @@ constant Ck_period : time := 10 ns;
 
 signal start,stop : bit := '0';
 
-constant cycles : integer := 1024;
-
-signal value_in : unsigned (cycles-1 downto 0) := to_unsigned (80074*1, cycles);
-signal value_out : unsigned (cycles-1 downto 0) := to_unsigned (80074*1, cycles);
+signal value_in : unsigned (cycles-1 downto 0) := (others => '0');
+signal value_out : unsigned (cycles-1 downto 0) := (others => '0');
 
 BEGIN
 
@@ -91,6 +89,7 @@ begin
 Reset <= '0';
 wait for 100 ns;
 Reset <= '1';
+value_in <= to_unsigned (80074*1, cycles);
 start <= '1';
 wait;
 end process reset_proc;
@@ -99,14 +98,17 @@ end process reset_proc;
 stim_proc_in : process
 begin
 wait until start = '1';
-wait until rising_edge (Ck);
 shift_out (i_IN, Ck, value_in);
+wait until rising_edge (Ck);
+i_IN <= '0';
 wait;
 end process stim_proc_in;
 
 stim_proc_out : process
 begin
 wait until start = '1';
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 shift_in (o_O1, Ck, value_out);
 wait;
@@ -120,17 +122,17 @@ assert (to_integer (unsigned (value_in)) = to_integer (unsigned (value_out)))
     integer'image (to_integer (unsigned (value_in))) &
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
-wait for 1 ps;
+wait for Ck_period;
 report "tb done" severity failure;
 end process assert_proc;
 
 cycles_proc : process (Ck) is
-  variable i : integer range 0 to cycles-1;
+  variable i : integer range 0 to cycles+2;
 begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = cycles - 1) then
+    if (i = cycles+2) then
       stop <= '1';
       i := 0;
     else
