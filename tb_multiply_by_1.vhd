@@ -85,19 +85,12 @@ end process Ck_process;
 
 reset_proc : process
 begin
+l0 : for i in 0 to 65535 loop
 start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
-value_in <= to_unsigned (80074*1, cycles);
+value_in <= to_unsigned (i*1, cycles);
 wait for (cycles+3)*Ck_Period;
-
-start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
-value_in <= to_unsigned (55555*1, cycles);
-wait for (cycles+3)*Ck_Period;
-
-start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
-value_in <= to_unsigned (11111*1, cycles);
-wait for (cycles+3)*Ck_Period;
-
-wait;
+end loop l0;
+report "tb done" severity failure;
 end process reset_proc;
 
 -- Stimulus processes
