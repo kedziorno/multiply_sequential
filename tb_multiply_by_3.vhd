@@ -30,7 +30,9 @@ USE ieee.std_logic_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---USE ieee.numeric_std.ALL;
+USE ieee.numeric_std.ALL;
+
+USE work.pkg_test.all;
 
 ENTITY tb_multiply_by_3 IS
 END tb_multiply_by_3;
@@ -59,6 +61,11 @@ signal o_O1 : std_logic;
 
 constant Ck_period : time := 10 ns;
 
+signal start,stop : bit := '0';
+
+signal value_in : unsigned (cycles-1 downto 0) := (others => '0');
+signal value_out : unsigned (cycles-1 downto 0) := (others => '0');
+
 BEGIN
 
 -- Instantiate the Unit Under Test (UUT)
@@ -71,48 +78,64 @@ o_O1 => o_O1
 );
 
 -- Clock process definitions
-Ck_process :process
+Ck_process : process
 begin
-Ck <= '1';
-wait for Ck_period/2;
-Ck <= '0';
-wait for Ck_period/2;
+Ck <= not Ck; wait for Ck_period/2;
 end process Ck_process;
 
--- Stimulus process
-stim_proc: process
+reset_proc : process
 begin
--- hold reset state for 100 ns.
-Reset <= '0';
-wait for 100 ns;
-Reset <= '1';
---wait for Ck_period*1;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '1'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
-i_IN <= '0'; wait for Ck_period;
--- insert stimulus here 
+l0 : for i in 0 to 65535 loop
+start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
+value_in <= to_unsigned (i, cycles);
+wait for (cycles+3)*Ck_Period;
+end loop l0;
 report "tb done" severity failure;
-wait;
-end process;
+end process reset_proc;
+
+-- Stimulus processes
+stim_proc_in : process
+begin
+wait until start = '1';
+shift_out (i_IN, Ck, value_in);
+wait until rising_edge (Ck);
+i_IN <= '0';
+end process stim_proc_in;
+
+stim_proc_out : process
+begin
+wait until start = '1';
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+shift_in (o_O1, Ck, value_out);
+end process stim_proc_out;
+
+assert_proc : process
+begin
+wait until stop = '1';
+assert (to_integer (unsigned (value_in)) * 3 = to_integer (unsigned (value_out)))
+  report 
+    integer'image (to_integer (unsigned (value_in))) &
+    " /= " &
+    integer'image (to_integer (unsigned (value_out)));
+wait for Ck_period;
+end process assert_proc;
+
+cycles_proc : process (Ck) is
+  variable i : integer range 0 to cycles+2;
+begin
+  if (Reset = '0') then
+    i := 0;
+  elsif (rising_edge (Ck)) then
+    if (i = cycles+2) then
+      stop <= '1';
+      i := 0;
+    else
+      stop <= '0';
+      i := i + 1;
+    end if;
+  end if;
+end process cycles_proc;
 
 END;

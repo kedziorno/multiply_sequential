@@ -100,7 +100,6 @@ wait until start = '1';
 shift_out (i_IN, Ck, value_in);
 wait until rising_edge (Ck);
 i_IN <= '0';
---wait;
 end process stim_proc_in;
 
 stim_proc_out : process
@@ -110,7 +109,6 @@ wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 shift_in (o_O1, Ck, value_out);
---wait;
 end process stim_proc_out;
 
 assert_proc : process
@@ -122,7 +120,6 @@ assert (to_integer (unsigned (value_in)) = to_integer (unsigned (value_out)))
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
 wait for Ck_period;
---report "tb done" severity failure;
 end process assert_proc;
 
 cycles_proc : process (Ck) is
