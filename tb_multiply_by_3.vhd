@@ -87,12 +87,13 @@ end process Ck_process;
 
 reset_proc : process
 begin
-l0 : for i in 0 to 2**no_values_power2-1 loop -- range 0 to 2^x
-start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1'; -- sequence for test one value
+l0 : for i in 0 to (2**no_values_power2) loop -- range 0 to 2^x
+start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; -- sequence for test one value
 value_in <= to_unsigned (i, cycles); -- for shift register
 value_in (cycles-1 downto 1) <= value_in (cycles-2 downto 0); value_in (0) <= not (value_in (cycles-1) XOR value_in (cycles-10) XOR value_in (0)); -- catch from template example
-wait for (cycles+multiply)*Ck_Period; -- wait x cycles for out
+wait for (cycles+multiply+2)*Ck_Period; -- wait x cycles for out
 end loop l0;
+--start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; value_in <= x"ffffffff"; wait for (cycles+multiply+2)*Ck_Period; -- debug, ok all ones
 report "tb done" severity failure;
 end process reset_proc;
 
@@ -101,20 +102,24 @@ stim_proc_in : process -- send data
 begin
 wait until start = '1'; -- wait for new one data
 shift_out (i_IN, Ck, value_in); -- shifting data to uut
-wait until rising_edge (Ck); -- until re clock
 i_IN <= '0'; -- rest data have zeros
 end process stim_proc_in;
 
 stim_proc_out : process -- recv data
 begin
 wait until start = '1'; -- wait for new one data
-wait until rising_edge (Ck); -- must wait 3 cycles for value out
-wait until rising_edge (Ck);
-wait until rising_edge (Ck);
+l0 : for i in 0 to multiply-2 loop
+wait until rising_edge (Ck); -- must wait multiply cycles for value out
+end loop l0;
 shift_in (o_O1, Ck, value_out); -- shifting recv data to value
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+value_out <= (others => '0');
 end process stim_proc_out;
 
 assert_proc : process -- assert
+variable ones : std_logic := '1';
 begin
 wait until stop = '1'; -- wait for cycles ticks
 assert (to_integer (unsigned (value_in)) * multiply = to_integer (unsigned (value_out))) -- assert x*multiply=y
@@ -122,16 +127,19 @@ assert (to_integer (unsigned (value_in)) * multiply = to_integer (unsigned (valu
     integer'image (to_integer (unsigned (value_in)) * multiply) &
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
-wait for Ck_period;
+l0 : for i in 0 to cycles-1 loop
+  ones := ones and value_in (i);
+end loop l0;
+assert (ones = '0') report "value_in 1_1" severity note; -- debug
 end process assert_proc;
 
 cycles_proc : process (Ck) is -- cycles for uut multipler
-  variable i : integer range 0 to cycles+multiply;
+  variable i : integer range 0 to cycles+multiply+1;
 begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = cycles+multiply) then
+    if (i = cycles+multiply+1) then
       stop <= '1'; -- finish multiply
       i := 0;
     else

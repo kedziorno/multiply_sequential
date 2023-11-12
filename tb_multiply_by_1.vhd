@@ -112,6 +112,7 @@ l0 : for i in 0 to multiply loop
 wait until rising_edge (Ck); -- must wait multiply cycles for value out
 end loop l0;
 shift_in (o_O1, Ck, value_out); -- shifting recv data to value
+wait until rising_edge (Ck);
 value_out <= (others => '0');
 end process stim_proc_out;
 
