@@ -5,7 +5,8 @@ USE ieee.numeric_std.ALL;
 
 package pkg_test is
 
-constant cycles : integer := 20;
+constant cycles : integer := 32;
+constant no_values_power2 : integer := 16;
 
 procedure shift_out (
   signal i_IN : out std_logic; 
