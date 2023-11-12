@@ -41,7 +41,7 @@ ARCHITECTURE behavior OF tb_multiply_by_1 IS
 
 -- Component Declaration for the Unit Under Test (UUT)
 COMPONENT multiply_by_1
-PORT(
+PORT (
 Ck : IN  std_logic;
 Reset : IN  std_logic;
 i_IN : IN  std_logic;
@@ -58,6 +58,8 @@ signal i_IN : std_logic := '0';
 --Outputs
 signal o_O0 : std_logic;
 signal o_O1 : std_logic;
+
+constant multiply : integer := 1;
 
 constant Ck_period : time := 10 ns;
 
@@ -85,51 +87,51 @@ end process Ck_process;
 
 reset_proc : process
 begin
-l0 : for i in 0 to 65535 loop
-start <= '0'; Reset <= '0'; wait for Ck_period; Reset <= '1'; start <= '1';
-value_in <= to_unsigned (i*1, cycles);
-wait for (cycles+3)*Ck_Period;
+l0 : for i in 0 to 2**no_values_power2-1 loop -- range 0 to 2^x
+start <= '0'; Reset <= '0'; wait for Ck_period*multiply; Reset <= '1'; start <= '1'; -- sequence for test one value
+value_in <= to_unsigned (i, cycles); -- for shift register
+value_in (cycles-1 downto 1) <= value_in (cycles-2 downto 0); value_in (0) <= not (value_in (cycles-1) XOR value_in (cycles-10) XOR value_in (0)); -- catch from template example
+wait for (cycles+multiply+2)*Ck_Period; -- wait x cycles for out
 end loop l0;
 report "tb done" severity failure;
 end process reset_proc;
 
 -- Stimulus processes
-stim_proc_in : process
+stim_proc_in : process -- send data
 begin
-wait until start = '1';
-shift_out (i_IN, Ck, value_in);
-wait until rising_edge (Ck);
-i_IN <= '0';
+wait until start = '1'; -- wait for new one data
+shift_out (i_IN, Ck, value_in); -- shifting data to uut
+i_IN <= '0'; -- rest data have zeros
 end process stim_proc_in;
 
-stim_proc_out : process
+stim_proc_out : process -- recv data
 begin
-wait until start = '1';
-wait until rising_edge (Ck);
-wait until rising_edge (Ck);
-wait until rising_edge (Ck);
-shift_in (o_O1, Ck, value_out);
+wait until start = '1'; -- wait for new one data
+l0 : for i in 0 to multiply loop
+wait until rising_edge (Ck); -- must wait multiply cycles for value out
+end loop l0;
+shift_in (o_O1, Ck, value_out); -- shifting recv data to value
+value_out <= (others => '0');
 end process stim_proc_out;
 
-assert_proc : process
+assert_proc : process -- assert
 begin
-wait until stop = '1';
-assert (to_integer (unsigned (value_in)) = to_integer (unsigned (value_out)))
+wait until stop = '1'; -- wait for cycles ticks
+assert (to_integer (unsigned (value_in)) * multiply = to_integer (unsigned (value_out))) -- assert x*multiply=y
   report 
-    integer'image (to_integer (unsigned (value_in))) &
+    integer'image (to_integer (unsigned (value_in)) * multiply) &
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
-wait for Ck_period;
 end process assert_proc;
 
-cycles_proc : process (Ck) is
-  variable i : integer range 0 to cycles+2;
+cycles_proc : process (Ck) is -- cycles for uut multipler
+  variable i : integer range 0 to cycles+multiply+1;
 begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = cycles+2) then
-      stop <= '1';
+    if (i = cycles+multiply+1) then
+      stop <= '1'; -- finish multiply
       i := 0;
     else
       stop <= '0';

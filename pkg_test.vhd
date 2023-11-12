@@ -34,6 +34,7 @@ begin
     wait until rising_edge (Ck);
     i_IN <= to_x01(value (i));
   end loop l0;
+  wait until rising_edge (Ck);
 end procedure shift_out;
 
 procedure shift_in (
@@ -42,6 +43,7 @@ procedure shift_in (
   signal value : out unsigned
 ) is
 begin
+  wait until rising_edge (Ck);
   l0 : for i in 0 to cycles-1 loop
     value (i) <= o_O1;
     wait until rising_edge (Ck);
