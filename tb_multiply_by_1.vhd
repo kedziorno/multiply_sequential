@@ -65,8 +65,8 @@ constant Ck_period : time := 10 ns;
 
 signal start,stop : bit := '0';
 
-signal value_in : unsigned (cycles-1 downto 0) := (others => '0');
-signal value_out : unsigned (cycles-1 downto 0) := (others => '0');
+signal value_in : unsigned (bits_value_in-1 downto 0) := (others => '0');
+signal value_out : unsigned (bits_value_out-1 downto 0) := (others => '0');
 
 BEGIN
 
@@ -87,13 +87,13 @@ end process Ck_process;
 
 reset_proc : process
 begin
-l0 : for i in 0 to (2**no_values_power2) loop -- range 0 to 2^x
+l0 : for i in 0 to (2**no_values_power2)-1 loop -- range 0 to 2^x
 start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; -- sequence for test one value
-value_in <= to_unsigned (i, cycles); -- for shift register
-value_in (cycles-1 downto 1) <= value_in (cycles-2 downto 0); value_in (0) <= not (value_in (cycles-1) XOR value_in (cycles-10) XOR value_in (0)); -- catch from template example
-wait for (cycles+multiply+2)*Ck_Period; -- wait x cycles for out
+value_in <= to_unsigned (i, bits_value_in); -- for shift register
+value_in (bits_value_in-1 downto 1) <= value_in (bits_value_in-2 downto 0); value_in (0) <= not (value_in (bits_value_in-1) XOR value_in (bits_value_in-((bits_value_in-1)/2)) XOR value_in (0)); -- catch from template example
+wait for (bits_value_in+(bits_value_out-bits_value_in)+2)*Ck_Period; -- wait x cycles for out
 end loop l0;
---start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; value_in <= x"ffffffff"; wait for (cycles+multiply+2)*Ck_Period; -- debug, ok all ones
+--start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; value_in <= x"ffffffff"; wait for (bits_value_in+bits_value_in+2)*Ck_Period; -- debug, ok all ones
 report "tb done" severity failure;
 end process reset_proc;
 
@@ -112,9 +112,11 @@ l0 : for i in 0 to 1 loop
 wait until rising_edge (Ck); -- must wait multiply cycles for value out
 end loop l0;
 shift_in (o_O1, Ck, value_out); -- shifting recv data to value
-l1 : for i in 0 to multiply-1 loop
-wait until rising_edge (Ck); -- must wait multiply cycles for value out
-end loop l1;
+--l1 : for i in 0 to bits_value_out-(bits_value_out-bits_value_in)-3 loop
+--l1 : for i in 0 to 1 loop
+--wait until rising_edge (Ck); -- must wait multiply cycles for value out
+--end loop l1;
+value_out <= (others => '0');
 end process stim_proc_out;
 
 assert_proc : process -- assert
@@ -126,7 +128,7 @@ assert (to_integer (unsigned (value_in)) * multiply = to_integer (unsigned (valu
     integer'image (to_integer (unsigned (value_in)) * multiply) &
     " /= " &
     integer'image (to_integer (unsigned (value_out)));
-l0 : for i in 0 to cycles-1 loop
+l0 : for i in 0 to bits_value_in-1 loop
   ones := ones and value_in (i);
 end loop l0;
 assert (ones = '0') report "value_in 1_1" severity note; -- debug
@@ -138,7 +140,7 @@ begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = cycles+multiply-1) then
+    if (i = bits_value_in+1) then
       stop <= '1'; -- finish multiply
       i := 0;
     else

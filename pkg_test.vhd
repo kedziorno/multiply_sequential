@@ -5,19 +5,21 @@ USE ieee.numeric_std.ALL;
 
 package pkg_test is
 
+constant bits_value_in : integer := 31;
+constant bits_value_out : integer := 32;
 constant cycles : integer := 32;
 constant no_values_power2 : integer := 20;
 
 procedure shift_out (
   signal i_IN : out std_logic; 
   signal Ck : in std_logic;
-  constant value : in unsigned
+  constant value_in : in unsigned
 );
 
 procedure shift_in (
   signal o_O1 : in std_logic; 
   signal Ck : in std_logic;
-  signal value : out unsigned
+  signal value_out : out unsigned
 );
 
 end pkg_test;
@@ -27,11 +29,11 @@ package body pkg_test is
 procedure shift_out (
   signal i_IN : out std_logic; 
   signal Ck : in std_logic;
-  constant value : in unsigned
+  constant value_in : in unsigned
 ) is
 begin
-  l0 : for i in 0 to cycles-1 loop
-    i_IN <= to_x01(value (i));
+  l0 : for i in 0 to bits_value_in-1 loop
+    i_IN <= to_x01 (value_in (i));
     wait until rising_edge (Ck);
   end loop l0;
 end procedure shift_out;
@@ -39,11 +41,11 @@ end procedure shift_out;
 procedure shift_in (
   signal o_O1 : in std_logic; 
   signal Ck : in std_logic;
-  signal value : out unsigned
+  signal value_out : out unsigned
 ) is
 begin
-  l0 : for i in 0 to cycles-1 loop
-    value (i) <= o_O1;
+  l0 : for i in 0 to bits_value_out-1 loop
+    value_out (i) <= o_O1;
     wait until rising_edge (Ck);
   end loop l0;
 end procedure shift_in;
