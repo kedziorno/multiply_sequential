@@ -31,7 +31,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 ---------------------------------------------------------------------------------------------------
 -- Deeds (Digital Electronics Education and Design Suite)
--- VHDL Code generated on (11/8/2023, 7:31:27 PM)
+-- VHDL Code generated on (11/14/2023, 11:31:19 AM)
 --      by the Deeds (Finite State Machine Simulator)(Deeds-FsM)
 --      Ver. 2.50.200 (Feb 18, 2022)
 -- Copyright (c) 2002-2022 University of Genoa, Italy
@@ -58,7 +58,7 @@ ARCHITECTURE behavioral OF multiply_by_2 IS       -- (Behavioral Description)
   TYPE states is ( state_0,
                    state_1,
                    state_2,
-                   dummy_11 );
+                   state_3 );
   SIGNAL State,
          Next_State: states;
 BEGIN
@@ -75,7 +75,7 @@ BEGIN
                  end if;
       when state_2 =>
                  if (i_IN = '1') then
-                   Next_State <= state_2;
+                   Next_State <= state_3;
                  else
                    Next_State <= state_1;
                  end if;
@@ -85,8 +85,12 @@ BEGIN
                  else
                    Next_State <= state_0;
                  end if;
-      when OTHERS =>
-                 Next_State <= state_0;
+      when state_3 =>
+                 if (i_IN = '1') then
+                   Next_State <= state_3;
+                 else
+                   Next_State <= state_1;
+                 end if;
     END case;
   end process;
 
@@ -112,12 +116,11 @@ BEGIN
       when state_0 =>
                  o_O0 <= '1';
       when state_2 =>
-                 o_O1 <= '1';
+                 o_O0 <= '1';
       when state_1 =>
                  o_O1 <= '1';
-      when OTHERS =>
-                 o_O0 <= '0';
-                 o_O1 <= '0';
+      when state_3 =>
+                 o_O1 <= '1';
     END case;
   end process;
 
