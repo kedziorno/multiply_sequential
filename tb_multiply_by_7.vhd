@@ -30,8 +30,10 @@ USE ieee.std_logic_1164.ALL;
  
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---USE ieee.numeric_std.ALL;
- 
+USE ieee.numeric_std.ALL;
+
+USE work.pkg_test.all;
+
 ENTITY tb_multiply_by_7 IS
 END tb_multiply_by_7;
  
