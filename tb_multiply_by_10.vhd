@@ -38,6 +38,7 @@ ENTITY tb_multiply_by_10 IS
 END tb_multiply_by_10;
  
 ARCHITECTURE behavior OF tb_multiply_by_10 IS
+
 -- Component Declaration for the Unit Under Test (UUT)
 COMPONENT multiply_by_10
 PORT (
