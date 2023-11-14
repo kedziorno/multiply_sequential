@@ -31,7 +31,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 ---------------------------------------------------------------------------------------------------
 -- Deeds (Digital Electronics Education and Design Suite)
--- VHDL Code generated on (11/8/2023, 7:32:11 PM)
+-- VHDL Code generated on (11/14/2023, 12:41:59 PM)
 --      by the Deeds (Finite State Machine Simulator)(Deeds-FsM)
 --      Ver. 2.50.200 (Feb 18, 2022)
 -- Copyright (c) 2002-2022 University of Genoa, Italy
@@ -103,7 +103,7 @@ BEGIN
                  end if;
       when state_3 =>
                  if (i_IN = '1') then
-                   Next_State <= state_4;
+                   Next_State <= state_5;
                  else
                    Next_State <= state_1;
                  end if;

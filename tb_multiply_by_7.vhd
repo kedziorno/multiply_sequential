@@ -132,12 +132,12 @@ assert (ones = '0') report "value_in 1_1" severity note; -- debug
 end process assert_proc;
 
 cycles_proc : process (Ck) is -- cycles for uut multipler
-  variable i : integer range 0 to cycles+multiply+1;
+  variable i : integer range 0 to cycles+multiply;
 begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = cycles+multiply+1) then
+    if (i = cycles+multiply) then
       stop <= '1'; -- finish multiply
       i := 0;
     else
