@@ -107,14 +107,20 @@ end process stim_proc_in;
 stim_proc_out : process -- recv data
 begin
 wait until start = '1'; -- wait for new one data
-l0 : for i in 0 to multiply-2 loop
+l0 : for i in 0 to 1 loop
 wait until rising_edge (Ck); -- must wait multiply cycles for value out
 end loop l0;
 shift_in (o_O1, Ck, value_out); -- shifting recv data to value
 wait until rising_edge (Ck);
 wait until rising_edge (Ck);
 wait until rising_edge (Ck);
-value_out <= (others => '0');
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+wait until rising_edge (Ck);
+--value_out <= (others => '0');
 end process stim_proc_out;
 
 assert_proc : process -- assert
