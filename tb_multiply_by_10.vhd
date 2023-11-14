@@ -115,7 +115,6 @@ shift_in (o_O1, Ck, value_out); -- shifting recv data to value
 l1 : for i in 0 to multiply-1 loop
 wait until rising_edge (Ck); -- must wait multiply cycles for value out
 end loop l1;
-value_out <= (others => '0');
 end process stim_proc_out;
 
 assert_proc : process -- assert
