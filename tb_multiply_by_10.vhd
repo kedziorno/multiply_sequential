@@ -91,7 +91,7 @@ begin
 l0 : for i in 0 to (2**no_values_power2) loop -- range 0 to 2^x
 start <= '0'; Reset <= '0'; wait for Ck_period*1; Reset <= '1'; start <= '1'; -- sequence for test one value
 value_in <= to_unsigned (i, bits_value_in); -- for shift register
-value_in (bits_value_in-1 downto 1) <= value_in (bits_value_in-2 downto 0); value_in (0) <= not (value_in (bits_value_in-1) XOR value_in (bits_value_in-(bits_value_in/2)) XOR value_in (0)); -- catch from template example
+--value_in (bits_value_in-1 downto 1) <= value_in (bits_value_in-2 downto 0); value_in (0) <= not (value_in (bits_value_in-1) XOR value_in (bits_value_in-(bits_value_in/2)) XOR value_in (0)); -- catch from template example
 --wait for (bits_value_in+4)*Ck_Period; -- wait x cycles for out
 --wait for (bits_value_in+bits_value_out)*Ck_Period; -- wait x cycles for out
 wait for (bits_value_in+bits_value_in+2)*Ck_Period; -- wait x cycles for out
@@ -120,10 +120,11 @@ wait until rising_edge (Ck); -- must wait multiply cycles for value out
 end loop l0;
 shift_in (o_O1, Ck, value_out); -- shifting recv data to value
 value_out <= (others => '0');
---l1 : for i in 0 to 3 loop
+--l1 : for i in 0 to bits_value_out-(bits_value_out-bits_value_in)-3 loop
+--l1 : for i in 0 to 1 loop
 --wait until rising_edge (Ck); -- must wait multiply cycles for value out
 --end loop l1;
---value_out <= (others => '0');
+value_out <= (others => '0');
 end process stim_proc_out;
 
 assert_proc : process -- assert
@@ -147,7 +148,7 @@ begin
   if (Reset = '0') then
     i := 0;
   elsif (rising_edge (Ck)) then
-    if (i = bits_value_in+bits_value_in+1) then
+    if (i = bits_value_in+5) then
       stop <= '1'; -- finish multiply
       i := 0;
     else

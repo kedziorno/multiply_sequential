@@ -5,8 +5,8 @@ USE ieee.numeric_std.ALL;
 
 package pkg_test is
 
-constant bits_value_in : integer := 31;
-constant bits_value_out : integer := 32;
+constant bits_value_in : integer := 20;
+constant bits_value_out : integer := 24;
 constant cycles : integer := 32;
 constant no_values_power2 : integer := 20;
 
